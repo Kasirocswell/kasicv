@@ -1,10 +1,21 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default function ThreeDTour() {
   const containerRef = useRef(null);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
+
+  // Separate useEffect for the loading timeout
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoadingScreen(false);
+    }, 9000);
+
+    // Cleanup the timer if the component is unmounted
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -20,26 +31,21 @@ export default function ThreeDTour() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Load the .glb model
     const loader = new GLTFLoader();
     loader.load("/room.glb", (gltf) => {
       scene.add(gltf.scene);
     });
 
-    // Set camera position inside the model
-    camera.position.set(-2, 1.6, 2); // Assuming 1.6 is eye level
+    camera.position.set(-2, 1.6, 2);
+    camera.lookAt(new THREE.Vector3(-2, 1.6, 2));
 
-    // Adjust camera to face the X-axis
-    camera.lookAt(new THREE.Vector3(-2, 1.6, 2)); // Look towards positive X-axis
-
-    // Add orbit controls for 360 x-axis movement
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(-2, 1.6, 1); // Set the point to look at (center of the room)
+    controls.target.set(-2, 1.6, 1);
     controls.enableZoom = false;
     controls.enablePan = false;
     controls.enableRotate = true;
-    controls.minPolarAngle = 0; // radians
-    controls.maxPolarAngle = Math.PI; // radians
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle = Math.PI;
 
     const originalFOV = camera.fov;
     let targetFOV = originalFOV;
@@ -47,7 +53,7 @@ export default function ThreeDTour() {
 
     function zoomStep() {
       if (Math.abs(camera.fov - targetFOV) > 0.1) {
-        camera.fov += (targetFOV - camera.fov) * 0.1; // Smooth transition effect
+        camera.fov += (targetFOV - camera.fov) * 0.1;
         camera.updateProjectionMatrix();
         requestAnimationFrame(zoomStep);
       } else {
@@ -59,7 +65,7 @@ export default function ThreeDTour() {
 
     function handleKeyDown(event) {
       if (event.key === "z" && !isZooming) {
-        targetFOV = originalFOV * 0.25; // Reduce FOV to 25% of original for a 75% zoom-in effect
+        targetFOV = originalFOV * 0.25;
         isZooming = true;
         zoomStep();
       }
@@ -83,33 +89,35 @@ export default function ThreeDTour() {
 
     animate();
 
-    // Add ambient light
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    // Add directional light
     const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
     directionalLight.position.set(5, 10, 7);
     scene.add(directionalLight);
 
-    // Set the camera's aspect ratio and the renderer's size
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Handle window resizing
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Cleanup on component unmount
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
 
-  return <div ref={containerRef} className="w-full h-full"></div>;
+  return (
+    <div className="w-full h-full relative">
+      <div
+        ref={containerRef}
+        className="w-full h-full absolute top-0 left-0"
+      ></div>
+    </div>
+  );
 }

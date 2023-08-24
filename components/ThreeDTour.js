@@ -5,17 +5,6 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default function ThreeDTour() {
   const containerRef = useRef(null);
-  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
-
-  // Separate useEffect for the loading timeout
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoadingScreen(false);
-    }, 9000);
-
-    // Cleanup the timer if the component is unmounted
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -27,6 +16,7 @@ export default function ThreeDTour() {
       0.1,
       1000
     );
+
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);

@@ -12,6 +12,7 @@ import tiktok from "../public/tiktok.png";
 import github from "../public/github.png";
 import cd from "../public/CD.jpg";
 import eth from "../public/eth.jpg";
+import soke from "../public/soke.png";
 
 let callSequence = 0;
 let showModal = false;
@@ -279,7 +280,7 @@ export default function MainPage() {
                           target="_blank"
                         >
                           <Image
-                            src={twitter}
+                            src={soke}
                             width={150}
                             height={150}
                             alt="Twitter Logo"
